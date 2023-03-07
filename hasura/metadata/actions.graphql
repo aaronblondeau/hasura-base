@@ -1,0 +1,12 @@
+type Mutation {
+  register(
+    password: String!
+    email: String!
+  ): RegisterOutput
+}
+
+type RegisterOutput {
+  id: String!
+  token: String!
+}
+

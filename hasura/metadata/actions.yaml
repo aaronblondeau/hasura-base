@@ -1,0 +1,12 @@
+actions:
+  - name: register
+    definition:
+      kind: synchronous
+      handler: '{{ACTIONS_BASE_URL}}/register'
+    comment: Create new user.
+custom_types:
+  enums: []
+  input_objects: []
+  objects:
+    - name: RegisterOutput
+  scalars: []
