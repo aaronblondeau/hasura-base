@@ -1,12 +1,34 @@
 actions:
+  - name: login
+    definition:
+      kind: synchronous
+      handler: '{{ACTIONS_BASE_URL}}/login'
+    permissions:
+      - role: public
   - name: register
     definition:
       kind: synchronous
       handler: '{{ACTIONS_BASE_URL}}/register'
+    permissions:
+      - role: public
     comment: Create new user.
+  - name: resendVerificationEmail
+    definition:
+      kind: synchronous
+      handler: '{{ACTIONS_BASE_URL}}/resendVerificationEmail'
+    permissions:
+      - role: user
+  - name: verifyEmail
+    definition:
+      kind: synchronous
+      handler: '{{ACTIONS_BASE_URL}}/verifyEmail'
+    permissions:
+      - role: user
+      - role: public
 custom_types:
   enums: []
   input_objects: []
   objects:
     - name: RegisterOutput
+    - name: LoginOutput
   scalars: []

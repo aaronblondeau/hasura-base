@@ -1,0 +1,19 @@
+<mjml>
+  <mj-body background-color="#FFFFFF">
+    <mj-section background-color="#ffffff" full-width="full-width" padding="0px">
+      <mj-column>
+        <mj-text color="#3579f6" font-size="32px" align="center" font-weight="bold">{{ appName }}</mj-text>
+        <mj-divider border-width="1px" border-color="#E0E0E0"></mj-divider>
+      </mj-column>
+    </mj-section>
+    <mj-section padding="0px">
+      <mj-column>
+        <mj-text font-size="14px">
+          <p>
+          Please visit <a href="{{verificationUrl}}">{{verificationUrl}}</a> to verify that this email address belongs to your {{appName}} account.
+          </p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

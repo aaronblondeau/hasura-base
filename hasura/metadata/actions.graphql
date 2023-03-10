@@ -1,12 +1,34 @@
 type Mutation {
+  login(
+    email: String!
+    password: String!
+  ): LoginOutput
+}
+
+type Mutation {
   register(
     password: String!
     email: String!
   ): RegisterOutput
 }
 
+type Mutation {
+  resendVerificationEmail: Boolean
+}
+
+type Mutation {
+  verifyEmail(
+    code: String!
+  ): Boolean
+}
+
 type RegisterOutput {
   id: String!
   token: String!
+}
+
+type LoginOutput {
+  token: String!
+  id: String!
 }
 

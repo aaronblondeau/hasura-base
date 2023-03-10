@@ -4,12 +4,18 @@ import express from 'express'
 import axios from 'axios'
 import http from 'http'
 import cors from 'cors'
-import QueueController from './controllers/v1/QueueController'
+import QueueController from './controllers/QueueController'
+import AuthController from './controllers/AuthController'
+import ActionsController from './controllers/ActionsController'
 import terminus from '@godaddy/terminus'
-import Controller from './Controller'
+import Controller from './controllers/Controller'
+import prisma from './database'
+import { redisCache } from './cache'
 
 const controllers : Array<Controller> = [
-  QueueController
+  QueueController,
+  AuthController,
+  ActionsController
 ]
 
 const app = express()
@@ -43,11 +49,21 @@ if (process.env.GRACEFUL_SHUTDOWN !== 'no') {
       // Cleanup all resources
       console.log('~~ Terminus signal : cleaning up...')
 
+      console.log('Shutting down controllers')
       for (const controller of controllers) {
         if (controller.shutdown) {
           await controller.shutdown()
         }
       }
+
+      // Disconnect database client
+      console.log('Closing database connection')
+      await prisma.$disconnect()
+      
+      // Close cache connections
+      console.log('Closing cache connections')
+      const cache = await redisCache
+      cache.store.client.disconnect()
     },
     onShutdown: async () => {
       console.log('~~ Terminus shutdown complete.')

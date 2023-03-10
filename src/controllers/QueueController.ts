@@ -1,10 +1,10 @@
 import { ExpressAdapter, createBullBoard, BullMQAdapter } from '@bull-board/express'
 import { Queue, Worker } from 'bullmq'
 import { Express } from 'express'
-import Controller from '../../Controller'
+import Controller from './Controller'
 import basicAuth from 'express-basic-auth'
 
-import sendVerificationEmail, { worker as sendVerificationEmailWorker } from '../../queues/v1/sendVerificationEmail'
+import sendVerificationEmail, { worker as sendVerificationEmailWorker } from '../queues/sendVerificationEmail'
 
 const queues: Array<Queue> = [
   sendVerificationEmail
