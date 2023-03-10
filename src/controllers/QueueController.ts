@@ -5,12 +5,15 @@ import Controller from './Controller'
 import basicAuth from 'express-basic-auth'
 
 import sendVerificationEmail, { worker as sendVerificationEmailWorker } from '../queues/sendVerificationEmail'
+import sendPasswordResetEmail, { worker as sendPasswordResetEmailWorker } from '../queues/sendPasswordResetEmail'
 
 const queues: Array<Queue> = [
-  sendVerificationEmail
+  sendVerificationEmail,
+  sendPasswordResetEmail
 ]
 const workers: Array<Worker> = [
-  sendVerificationEmailWorker
+  sendVerificationEmailWorker,
+  sendPasswordResetEmailWorker
 ]
 
 const adapters: Array<BullMQAdapter> = []

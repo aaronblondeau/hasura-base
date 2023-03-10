@@ -1,24 +1,47 @@
-import { caching } from 'cache-manager'
-import { ioRedisStore } from '@tirke/node-cache-manager-ioredis'
+import Redis from 'ioredis'
 
-export const redisCache = caching(ioRedisStore, {
-  host: process.env.REDIS_HOST || 'localhost',
+const redis = new Redis({
   port: parseInt(process.env.REDIS_PORT || '6379'),
+  host: process.env.REDIS_HOST || 'localhost',
+  username: process.env.REDIS_USERNAME || '', // needs Redis >= 6
+  password: process.env.REDIS_PASSWORD,
   // Note that bullmq connection uses db 0
   db: parseInt(process.env.CACHE_REDIS_DB || '1'),
-  password: process.env.REDIS_PASSWORD || '',
-  ttl: 1800
 })
 
-redisCache.then((cache) => {
-  const client = cache.store.client
+class Cache {
+  redis: Redis
 
-  client.on('error', (error) => {
-    // handle error here
-    console.log('~~ Cache redis client error', error)
-  })
-  
-  client.on('connect', () => {
-    console.log('~~ Cache connected')
-  })
+  constructor(redis: Redis) {
+    this.redis = redis
+  }
+
+  async get(key: string) : Promise<string | null> {
+    return await redis.get(key)
+  }
+
+  async set(key: string, value: string, ttl: number = 1800) {
+    await redis.set(key, value, "EX", ttl)
+  }
+
+  async flushPrefix(prefix: string) {
+    const keys = await redis.keys(prefix + ':*')
+    await redis.del(keys)
+  }
+
+  disconnect() {
+    redis.disconnect()
+  }
+}
+
+redis.on('error', (error) => {
+  // handle error here
+  console.log('~~ Cache redis client error', error)
 })
+
+redis.on('connect', () => {
+  console.log('~~ Cache connected')
+})
+
+const cache = new Cache(redis)
+export default cache

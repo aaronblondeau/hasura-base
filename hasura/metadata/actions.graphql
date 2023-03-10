@@ -1,4 +1,24 @@
 type Mutation {
+  changeEmail(
+    password: String!
+    newEmail: String!
+  ): Boolean
+}
+
+type Mutation {
+  changePassword(
+    oldPassword: String!
+    newPassword: String!
+  ): Boolean
+}
+
+type Mutation {
+  destroyUser(
+    password: String!
+  ): Boolean
+}
+
+type Mutation {
   login(
     email: String!
     password: String!
@@ -14,6 +34,20 @@ type Mutation {
 
 type Mutation {
   resendVerificationEmail: Boolean
+}
+
+type Mutation {
+  resetPassword(
+    email: String!
+    newPassword: String!
+    code: String!
+  ): Boolean
+}
+
+type Mutation {
+  sendPasswordResetEmail(
+    email: String!
+  ): Boolean
 }
 
 type Mutation {

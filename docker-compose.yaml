@@ -30,3 +30,15 @@ services:
       ACTIONS_BASE_URL: ${NODE_BASE_URL}/hasura/actions
       EVENTS_WEBHOOK_URL: ${NODE_BASE_URL}/hasura/events
       HASURA_GRAPHQL_CORS_DOMAIN: '*'
+  minio:
+    image: minio/minio:latest
+    restart: always
+    ports:
+      - '9000:9000'
+      - '9090:9090'
+    volumes:
+      - ./data/minio:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server --console-address ":9090" /data

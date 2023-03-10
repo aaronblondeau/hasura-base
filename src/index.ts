@@ -10,7 +10,7 @@ import ActionsController from './controllers/ActionsController'
 import terminus from '@godaddy/terminus'
 import Controller from './controllers/Controller'
 import prisma from './database'
-import { redisCache } from './cache'
+import cache from './cache'
 
 const controllers : Array<Controller> = [
   QueueController,
@@ -62,8 +62,8 @@ if (process.env.GRACEFUL_SHUTDOWN !== 'no') {
       
       // Close cache connections
       console.log('Closing cache connections')
-      const cache = await redisCache
-      cache.store.client.disconnect()
+      
+      cache.disconnect()
     },
     onShutdown: async () => {
       console.log('~~ Terminus shutdown complete.')

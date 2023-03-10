@@ -9,11 +9,11 @@ import Handlebars from 'handlebars'
 import mjml2html from 'mjml'
 import { sendEmail } from '../email'
 
-const queueName = 'sendVerificationEmail'
+const queueName = 'sendPasswordChangedEmail'
 
 const queue = new Queue(queueName, { connection: queueRedisConnection })
 
-export class SendVerificationEmailJobData {
+export class SendPasswordChangedEmailJobData {
   userId = ''
   constructor(userId: string) {
     this.userId = userId;
@@ -21,7 +21,7 @@ export class SendVerificationEmailJobData {
 }
 
 export const worker = new Worker(queueName, async job => {
-  const userId = (job.data as SendVerificationEmailJobData).userId
+  const userId = (job.data as SendPasswordChangedEmailJobData).userId
 
   // Find the user
   const user = await prisma.users.findUnique({
@@ -33,31 +33,17 @@ export const worker = new Worker(queueName, async job => {
     throw new Error('User not found!')
   }
 
-  // Generate a new code and save it to their record
-  const code = randomInt(1000_000).toString().padStart(6, '0')
-  await prisma.users.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      email_verification_code: code,
-    },
-  })
-
-  // Send an email with a link containing the code
-
   const appName = process.env.APP_NAME || 'App Name'
-  const verificationUrl = process.env.WEB_BASE_URL + '/verify-email/' + code
 
-  const mjml = await fs.readFile('./src/emails/verification.mjml', 'utf8')
+  const mjml = await fs.readFile('./src/emails/password_changed.mjml', 'utf8')
   const template = Handlebars.compile(mjml)
-  const templateData = { appName, verificationUrl }
+  const templateData = { appName }
   const mjmlFilled = template(templateData)
   const mjmlOut = mjml2html(mjmlFilled)
   const htmlMessage = mjmlOut.html
 
-  const subject = appName + ' verify your email'
-  const textMessage = `Please visit ${verificationUrl} to verify your new ${appName} account.`
+  const subject = appName + ' password changed'
+  const textMessage = `Your ${appName} password has been changed. If this action was not taken by you then please contact us immediately.`
   
   await sendEmail(user.email, subject, textMessage, htmlMessage)
 }, { connection: queueRedisConnection })

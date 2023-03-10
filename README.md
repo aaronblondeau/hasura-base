@@ -1,5 +1,4 @@
-// TODO - exception wrapper for action controller routes
-// TODO - password_at & check in auth
+// User profile pic via minio (pic gets cleanup up on user destroy / pic change, pic is publicly accessible)
 
 1)
 yarn dev:docker:start
@@ -18,9 +17,7 @@ yarn dev:docker:stop
 To update prisma schema after hasura db updates:
 
 yarn prisma db pull
-
-Then:
-??? yarn prisma generate
+yarn prisma generate
 
 
 Prisma model types not updating?

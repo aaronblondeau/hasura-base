@@ -1,7 +1,7 @@
 import { Express, Request, Response } from 'express'
 import Controller from './Controller'
 import _ from 'lodash'
-import { redisCache } from '../cache'
+import cache from '../cache'
 import jwt from 'jsonwebtoken'
 import prisma from '../database'
 import { TokenPayload } from '../auth'
@@ -38,10 +38,9 @@ class AuthController implements Controller {
         })
       }
 
-      const cache = await redisCache
       try {
         // Check for cached response for this token to save round trips to db
-        const cached = await cache.get<string>(token)
+        const cached = await cache.get(token)
         if (cached) {
           if (cached === 'unauthorized') {
             return res.status(401).json({ error: 'unauthorized' })
@@ -54,18 +53,18 @@ class AuthController implements Controller {
         }
 
         // Decode and verify the token
-        const decoded = jwt.verify(token, process.env.JWT_TOKEN_KEY)
+        const decoded = jwt.verify(token, process.env.JWT_TOKEN_KEY) as TokenPayload
 
-        const userId = (decoded as TokenPayload).user_id
+        const userId = decoded.user_id
 
         if (!userId) {
-          // No usre id in the token => not authenticated
-          await cache.set(token, 'unauthorized', cacheTTL)
+          // No user id in the token => not authenticated
+          await cache.set(userId+':'+token, 'unauthorized', cacheTTL)
           res.status(401).json({ error: 'unauthorized' })
           return
         }
 
-        // Check if user has verified their email
+        // Check if exists
         const user = await prisma.users.findUnique({
           where: {
             id: userId,
@@ -75,6 +74,12 @@ class AuthController implements Controller {
           throw new Error('User not found!')
         }
 
+        // Use password timestamp to invalidate tokens when password changes
+        // Note, this depends on user's cached tokens getting removed on password changes
+        if (user.password_at.getTime() !== decoded.password_at) {
+          throw new Error('Token expired!')
+        }
+
         const role = 'user'
 
         // Give hasura the user's id and role
@@ -82,7 +87,7 @@ class AuthController implements Controller {
           'X-Hasura-Role': role,
           'X-Hasura-User-Id': userId
         }
-        await cache.set(token, JSON.stringify(responseData), cacheTTL)
+        await cache.set(userId+':'+token, JSON.stringify(responseData), cacheTTL)
         res.json(responseData)
 
       } catch (error) {

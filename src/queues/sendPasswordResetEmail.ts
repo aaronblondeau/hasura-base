@@ -9,11 +9,11 @@ import Handlebars from 'handlebars'
 import mjml2html from 'mjml'
 import { sendEmail } from '../email'
 
-const queueName = 'sendVerificationEmail'
+const queueName = 'sendPasswordResetEmail'
 
 const queue = new Queue(queueName, { connection: queueRedisConnection })
 
-export class SendVerificationEmailJobData {
+export class SendPasswordResetEmailJobData {
   userId = ''
   constructor(userId: string) {
     this.userId = userId;
@@ -21,7 +21,7 @@ export class SendVerificationEmailJobData {
 }
 
 export const worker = new Worker(queueName, async job => {
-  const userId = (job.data as SendVerificationEmailJobData).userId
+  const userId = (job.data as SendPasswordResetEmailJobData).userId
 
   // Find the user
   const user = await prisma.users.findUnique({
@@ -40,24 +40,24 @@ export const worker = new Worker(queueName, async job => {
       id: userId,
     },
     data: {
-      email_verification_code: code,
+      password_reset_code: code,
     },
   })
 
   // Send an email with a link containing the code
 
   const appName = process.env.APP_NAME || 'App Name'
-  const verificationUrl = process.env.WEB_BASE_URL + '/verify-email/' + code
+  const resetPasswordUrl = process.env.WEB_BASE_URL + '/reset-password/' + code
 
-  const mjml = await fs.readFile('./src/emails/verification.mjml', 'utf8')
+  const mjml = await fs.readFile('./src/emails/password_reset.mjml', 'utf8')
   const template = Handlebars.compile(mjml)
-  const templateData = { appName, verificationUrl }
+  const templateData = { appName, resetPasswordUrl }
   const mjmlFilled = template(templateData)
   const mjmlOut = mjml2html(mjmlFilled)
   const htmlMessage = mjmlOut.html
 
-  const subject = appName + ' verify your email'
-  const textMessage = `Please visit ${verificationUrl} to verify your new ${appName} account.`
+  const subject = appName + ' password reset request'
+  const textMessage = `Please visit ${resetPasswordUrl} to reset your ${appName} password.`
   
   await sendEmail(user.email, subject, textMessage, htmlMessage)
 }, { connection: queueRedisConnection })
