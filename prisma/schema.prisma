@@ -18,4 +18,5 @@ model users {
   password_reset_code     String?
   password_at             DateTime @default(now()) @db.Timestamptz(6)
   display_name            String?
+  avatar_file_key         String?
 }

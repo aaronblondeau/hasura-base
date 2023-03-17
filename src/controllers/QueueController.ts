@@ -6,14 +6,23 @@ import basicAuth from 'express-basic-auth'
 
 import sendVerificationEmail, { worker as sendVerificationEmailWorker } from '../queues/sendVerificationEmail'
 import sendPasswordResetEmail, { worker as sendPasswordResetEmailWorker } from '../queues/sendPasswordResetEmail'
+import sendPasswordChangedEmail, { worker as sendPasswordChangedEmailWorker } from '../queues/sendPasswordChangedEmail'
+import sendUserDestroyedEmail, { worker as sendUserDestroyedEmailWorker } from '../queues/sendUserDestroyedEmail'
+import cleanupDestroyedUserFiles, { worker as cleanupDestroyedUserFilesWorker } from '../queues/cleanupDestroyedUserFiles'
 
 const queues: Array<Queue> = [
   sendVerificationEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendPasswordChangedEmail,
+  sendUserDestroyedEmail,
+  cleanupDestroyedUserFiles
 ]
 const workers: Array<Worker> = [
   sendVerificationEmailWorker,
-  sendPasswordResetEmailWorker
+  sendPasswordResetEmailWorker,
+  sendPasswordChangedEmailWorker,
+  sendUserDestroyedEmailWorker,
+  cleanupDestroyedUserFilesWorker
 ]
 
 const adapters: Array<BullMQAdapter> = []

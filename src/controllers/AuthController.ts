@@ -4,13 +4,13 @@ import _ from 'lodash'
 import cache from '../cache'
 import jwt from 'jsonwebtoken'
 import prisma from '../database'
-import { TokenPayload } from '../auth'
+import { TokenPayload, verifyToken } from '../auth'
 
 const cacheTTL = 1800
 
 class AuthController implements Controller {
   startup (app: Express) {
-    app.use('/hasura/auth', async (req: Request, res: Response) => {
+    app.all('/hasura/auth', async (req: Request, res: Response) => {
       // Be nice in the way we look for a token
 
       // Check auth header first
@@ -48,12 +48,8 @@ class AuthController implements Controller {
           return res.json(JSON.parse(cached))
         }
 
-        if (!process.env.JWT_TOKEN_KEY) {
-          throw new Error('Backend not configured - missing jwt token key')
-        }
-
         // Decode and verify the token
-        const decoded = jwt.verify(token, process.env.JWT_TOKEN_KEY) as TokenPayload
+        const decoded = verifyToken(token)
 
         const userId = decoded.user_id
 

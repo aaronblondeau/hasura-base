@@ -7,6 +7,7 @@ import cors from 'cors'
 import QueueController from './controllers/QueueController'
 import AuthController from './controllers/AuthController'
 import ActionsController from './controllers/ActionsController'
+import FileStorageController from './controllers/FileStorageController'
 import terminus from '@godaddy/terminus'
 import Controller from './controllers/Controller'
 import prisma from './database'
@@ -15,7 +16,8 @@ import cache from './cache'
 const controllers : Array<Controller> = [
   QueueController,
   AuthController,
-  ActionsController
+  ActionsController,
+  FileStorageController
 ]
 
 const app = express()

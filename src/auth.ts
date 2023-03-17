@@ -27,3 +27,11 @@ export function generateTokenForUser (user: users) {
     // }
   )
 }
+
+export function verifyToken (token: string) : TokenPayload {
+  if (!process.env.JWT_TOKEN_KEY) {
+    throw new Error('Backend not configured - missing jwt token key')
+  }
+  const decoded = jwt.verify(token, process.env.JWT_TOKEN_KEY) as TokenPayload
+  return decoded
+}

@@ -5,6 +5,7 @@ import sendVerificationEmail, { SendVerificationEmailJobData } from '../queues/s
 import sendPasswordResetEmail, { SendPasswordResetEmailJobData } from '../queues/sendPasswordResetEmail'
 import sendPasswordChangedEmail, { SendPasswordChangedEmailJobData } from '../queues/sendPasswordChangedEmail'
 import sendUserDestroyedEmail, { SendUserDestroyedEmailJobData } from '../queues/sendUserDestroyedEmail'
+import cleanupDestroyedUserFiles, { CleanupDestroyedUserFilesJobData } from '../queues/cleanupDestroyedUserFiles'
 import bcrypt from 'bcryptjs'
 import prisma from '../database'
 import { generateTokenForUser } from '../auth'
@@ -37,7 +38,7 @@ class ActionsController implements Controller {
   }
 
   startup (app: Express) {
-    app.use('/hasura/actions/register', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/register', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         let email = req.body.input.email
         if (!email) {
@@ -74,13 +75,19 @@ class ActionsController implements Controller {
         const token = generateTokenForUser(user)
     
         // Send verification email
-        await sendVerificationEmail.add('send verification email for user id ' + user.id, new SendVerificationEmailJobData(user.id))
+        await sendVerificationEmail.add('send verification email for user id ' + user.id, new SendVerificationEmailJobData(user.id), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
     
         return res.send({ token, id: user.id })
       }, res)
     })
 
-    app.use('/hasura/actions/login', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/login', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         let email = req.body.input.email
         if (!email) {
@@ -110,20 +117,26 @@ class ActionsController implements Controller {
       }, res)
     })
 
-    app.use('/hasura/actions/resendVerificationEmail', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/resendVerificationEmail', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         const user = await this.getUserForRequest(req)
         if (!user) {
           throw new Error('User not found!')
         }
         
-        await sendVerificationEmail.add('send verification email for user id ' + user.id, new SendVerificationEmailJobData(user.id))
+        await sendVerificationEmail.add('send verification email for user id ' + user.id, new SendVerificationEmailJobData(user.id), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
 
         res.json(true)
       }, res)
     })
 
-    app.use('/hasura/actions/verifyEmail', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/verifyEmail', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         const code = req.body.input.code
         if (!code) {
@@ -150,7 +163,7 @@ class ActionsController implements Controller {
       }, res)
     })
 
-    app.use('/hasura/actions/sendPasswordResetEmail', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/sendPasswordResetEmail', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         let email = req.body.input.email
         if (!email) {
@@ -168,12 +181,18 @@ class ActionsController implements Controller {
           throw new Error('Email not found')
         }
         
-        await sendPasswordResetEmail.add('send password reset email for user id ' + user.id, new SendPasswordResetEmailJobData(user.id))
+        await sendPasswordResetEmail.add('send password reset email for user id ' + user.id, new SendPasswordResetEmailJobData(user.id), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
         res.json(true)
       }, res)
     })
 
-    app.use('/hasura/actions/resetPassword', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/resetPassword', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         let email = req.body.input.email
         if (!email) {
@@ -218,12 +237,18 @@ class ActionsController implements Controller {
         // Clear cached auth tokens for this user
         await cache.flushPrefix(user.id)
         
-        await sendPasswordChangedEmail.add('send password changed email for user id ' + user.id, new SendPasswordChangedEmailJobData(user.id))
+        await sendPasswordChangedEmail.add('send password changed email for user id ' + user.id, new SendPasswordChangedEmailJobData(user.id), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
         res.json(true)
       }, res)
     })
 
-    app.use('/hasura/actions/changePassword', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/changePassword', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         const user = await this.getUserForRequest(req)
         if (!user) {
@@ -256,12 +281,18 @@ class ActionsController implements Controller {
         // Clear cached auth tokens for this user
         await cache.flushPrefix(user.id)
         
-        await sendPasswordChangedEmail.add('send password changed email for user id ' + user.id, new SendPasswordChangedEmailJobData(user.id))
+        await sendPasswordChangedEmail.add('send password changed email for user id ' + user.id, new SendPasswordChangedEmailJobData(user.id), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
         res.json(true)
       }, res)
     })
 
-    app.use('/hasura/actions/changeEmail', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/changeEmail', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         const user = await this.getUserForRequest(req)
         if (!user) {
@@ -292,12 +323,18 @@ class ActionsController implements Controller {
           },
         })
 
-        await sendVerificationEmail.add('send verification email for user id ' + user.id, new SendVerificationEmailJobData(user.id))
+        await sendVerificationEmail.add('send verification email for user id ' + user.id, new SendVerificationEmailJobData(user.id), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
         res.json(true)
       }, res)
     })
 
-    app.use('/hasura/actions/destroyUser', async (req: Request, res: Response) => {
+    app.post('/hasura/actions/destroyUser', async (req: Request, res: Response) => {
       await this.wrapErrorHandler(async () => {
         const user = await this.getUserForRequest(req)
         if (!user) {
@@ -313,6 +350,7 @@ class ActionsController implements Controller {
         // TODO - in a transaction - cleanup user data and files (maybe send to a bg job)
 
         const email = user.email
+        const userId = user.id
 
         await prisma.users.delete({
           where: {
@@ -323,7 +361,20 @@ class ActionsController implements Controller {
         // Clear cached auth tokens for this user
         await cache.flushPrefix(user.id)
 
-        await sendUserDestroyedEmail.add('send destruction email for user id ' + user.id, new SendUserDestroyedEmailJobData(email))
+        await sendUserDestroyedEmail.add('send destruction email for user id ' + user.id, new SendUserDestroyedEmailJobData(email), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
+        await cleanupDestroyedUserFiles.add('cleanup destroyed user files for user id ' + user.id, new CleanupDestroyedUserFilesJobData(userId), {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 10000
+          }
+        })
         res.json(true)
       }, res)
     })
