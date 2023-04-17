@@ -123,6 +123,10 @@ class ActionsController implements Controller {
         if (!user) {
           throw new Error('User not found!')
         }
+
+        if (user.email_verified) {
+          throw new Error('Email already verified!')
+        }
         
         await sendVerificationEmail.add('send verification email for user id ' + user.id, new SendVerificationEmailJobData(user.id), {
           attempts: 3,
