@@ -15,6 +15,8 @@ yarn
 
 3. Start the docker containers
 
+Before starting the containers, switch the postgres image to something like "postgis/postgis:15-3.3" in docker-compose.yml if you need PostGIS support.
+
 ```
 yarn dev:docker:start
 ```
