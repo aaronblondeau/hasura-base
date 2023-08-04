@@ -1,0 +1,36 @@
+table:
+  name: contact_form_submissions
+  schema: public
+object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
+insert_permissions:
+  - role: public
+    permission:
+      check: {}
+      columns:
+        - email
+        - message
+        - name
+  - role: user
+    permission:
+      check: {}
+      set:
+        user_id: x-hasura-User-Id
+      columns:
+        - email
+        - id
+        - message
+        - name
+event_triggers:
+  - name: insert_contact_form_submission
+    definition:
+      enable_manual: false
+      insert:
+        columns: '*'
+    retry_conf:
+      interval_sec: 10
+      num_retries: 0
+      timeout_sec: 60
+    webhook_from_env: EVENTS_WEBHOOK_URL
