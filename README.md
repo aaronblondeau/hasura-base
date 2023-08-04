@@ -21,7 +21,7 @@ Before starting the containers, switch the postgres image to something like "pos
 yarn dev:docker:start
 ```
 
-4. Use the minio UI (http://localhost:9090/) to create a 'user-avatars-public' bucket as well as to create an api access key and secret. Update S3_ACCESS_KEY and S3_SECRET_KEY in .env file.
+4. Use the minio UI (http://localhost:9090/) to create a 'user-public' bucket as well as to create an api access key and secret. Update S3_ACCESS_KEY and S3_SECRET_KEY in .env file.
 
 5. Start the node.js server
 

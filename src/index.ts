@@ -8,6 +8,7 @@ import QueueController from './controllers/QueueController'
 import AuthController from './controllers/AuthController'
 import ActionsController from './controllers/ActionsController'
 import FileStorageController from './controllers/FileStorageController'
+import EventsController from './controllers/EventsController'
 import terminus from '@godaddy/terminus'
 import Controller from './controllers/Controller'
 import prisma from './database'
@@ -17,7 +18,8 @@ const controllers : Array<Controller> = [
   QueueController,
   AuthController,
   ActionsController,
-  FileStorageController
+  FileStorageController,
+  EventsController
 ]
 
 const app = express()

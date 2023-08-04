@@ -1,0 +1,19 @@
+<mjml>
+  <mj-body background-color="#FFFFFF">
+    <mj-section background-color="#ffffff" full-width="full-width" padding="0px">
+      <mj-column>
+        <mj-text color="#f54242" font-size="32px" align="center" font-weight="bold">AppName</mj-text>
+        <mj-divider border-width="1px" border-color="#E0E0E0"></mj-divider>
+      </mj-column>
+    </mj-section>
+    <mj-section padding="0px">
+      <mj-column>
+        <mj-text font-size="14px">
+          <p>Name: {{name}}</p>
+          <p>Email: {{email}}</p>
+          <p>Message: {{message}}</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

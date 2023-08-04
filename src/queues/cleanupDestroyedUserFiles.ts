@@ -2,7 +2,7 @@
 
 import { Queue, Worker, Job } from 'bullmq'
 import queueRedisConnection from './queueRedisConnection'
-import s3 from '../files'
+import { s3ClientUserPublic } from '../files'
 import { ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3'
 
 const queueName = 'cleanupDestroyedUserFiles'
@@ -19,14 +19,10 @@ export class CleanupDestroyedUserFilesJobData {
 export const worker = new Worker(queueName, async job => {
   const userId = (job.data as CleanupDestroyedUserFilesJobData).userId
 
-  // Cleanup avatar files
-  // bucket = user-avatars-public
-  // key = ${userId}/*
-
   // Delete all files with prefix from s3 bucket
   // https://docs.aws.amazon.com/AmazonS3/latest/userguide/example_s3_ListObjects_section.html
   const listCommand = new ListObjectsV2Command({
-    Bucket: process.env.S3_USER_AVATARS_BUCKET || 'user-avatars-public',
+    Bucket: process.env.S3_USER_PUBLIC_BUCKET || 'user-public',
     Prefix: `${userId}/`,
     MaxKeys: 100,
   })
@@ -35,7 +31,7 @@ export const worker = new Worker(queueName, async job => {
   while (isTruncated) {
     const objectsToDelete = []
 
-    const { Contents, IsTruncated, NextContinuationToken } = await s3.send(listCommand)
+    const { Contents, IsTruncated, NextContinuationToken } = await s3ClientUserPublic.send(listCommand)
     if (Contents) {
       for (const object of Contents) {
         console.log(`~~ Adding to file delete list ${object.Key}`)
@@ -50,12 +46,12 @@ export const worker = new Worker(queueName, async job => {
     if (objectsToDelete.length > 0) {
       // https://docs.aws.amazon.com/AmazonS3/latest/userguide/example_s3_DeleteObjects_section.html
       const deleteCommand = new DeleteObjectsCommand({
-        Bucket: process.env.S3_USER_AVATARS_BUCKET || 'user-avatars-public',
+        Bucket: process.env.S3_USER_PUBLIC_BUCKET || 'user-public',
         Delete: {
           Objects: objectsToDelete,
         },
       })
-      const { Deleted } = await s3.send(deleteCommand);
+      const { Deleted } = await s3ClientUserPublic.send(deleteCommand);
       if (Deleted) {
         console.log(
           `~~ Successfully deleted ${Deleted.length} objects from user avatars bucket for ${userId}.`

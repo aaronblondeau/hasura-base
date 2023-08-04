@@ -9,20 +9,23 @@ import sendPasswordResetEmail, { worker as sendPasswordResetEmailWorker } from '
 import sendPasswordChangedEmail, { worker as sendPasswordChangedEmailWorker } from '../queues/sendPasswordChangedEmail'
 import sendUserDestroyedEmail, { worker as sendUserDestroyedEmailWorker } from '../queues/sendUserDestroyedEmail'
 import cleanupDestroyedUserFiles, { worker as cleanupDestroyedUserFilesWorker } from '../queues/cleanupDestroyedUserFiles'
+import notifyContactFormSubmission, { worker as notifyContactFormSubmissionWorker } from '../queues/notifyContactFormSubmission'
 
 const queues: Array<Queue> = [
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendPasswordChangedEmail,
   sendUserDestroyedEmail,
-  cleanupDestroyedUserFiles
+  cleanupDestroyedUserFiles,
+  notifyContactFormSubmission
 ]
 const workers: Array<Worker> = [
   sendVerificationEmailWorker,
   sendPasswordResetEmailWorker,
   sendPasswordChangedEmailWorker,
   sendUserDestroyedEmailWorker,
-  cleanupDestroyedUserFilesWorker
+  cleanupDestroyedUserFilesWorker,
+  notifyContactFormSubmissionWorker
 ]
 
 const adapters: Array<BullMQAdapter> = []

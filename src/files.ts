@@ -1,13 +1,15 @@
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client } from '@aws-sdk/client-s3'
 
-const s3 = new S3Client({
+const s3ClientUserPublicConfig = {
   credentials: {
      accessKeyId: process.env.S3_ACCESS_KEY || '',
      secretAccessKey: process.env.S3_SECRET_KEY || ''
   },
-  endpoint: process.env.S3_ENDPOINT || 'http://localhost:9000',
-  forcePathStyle: true,
-  region: process.env.S3_REGION || 'us-east-1'
-})
-
-export default s3
+  region: process.env.S3_USER_PUBLIC_REGION || 'us-east-1'
+} as any
+if (process.env.S3_USER_PUBLIC_ENDPOINT) {
+  // MINIO
+  s3ClientUserPublicConfig.forcePathStyle = true
+  s3ClientUserPublicConfig.endpoint = process.env.S3_USER_PUBLIC_ENDPOINT
+}
+export const s3ClientUserPublic = new S3Client(s3ClientUserPublicConfig)

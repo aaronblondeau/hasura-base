@@ -11,7 +11,7 @@ import { format } from 'date-fns'
 import { Readable } from 'stream'
 import sharp from 'sharp'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
-import s3 from '../files'
+import { s3ClientUserPublic } from '../files'
 
 // https://www.npmjs.com/package/multer
 // https://www.npmjs.com/package/multer-s3
@@ -50,8 +50,8 @@ class FileStorageController implements Controller {
 
     const uploadUserAvatarsPublic = multer({
       storage: multerS3({
-        s3: s3 as any,
-        bucket: process.env.S3_USER_AVATARS_BUCKET || 'user-avatars-public',
+        s3: s3ClientUserPublic as any,
+        bucket: process.env.S3_USER_PUBLIC_BUCKET || 'user-public',
         metadata: (req, file, cb) => {
           cb(null, {originalname: file.originalname})
         },
@@ -69,7 +69,7 @@ class FileStorageController implements Controller {
             }
 
             (req as any).saved_files = [{
-              bucket: process.env.S3_USER_AVATARS_BUCKET || 'user-avatars-public',
+              bucket: process.env.S3_USER_PUBLIC_BUCKET || 'user-public',
               originalname: file.originalname,
               mimetype: file.mimetype,
               key: fileKey,
@@ -112,11 +112,11 @@ class FileStorageController implements Controller {
       const fileId = req.params.fileId
       const fileKey = `${userId}/${fileId}`
       const params = {
-        Bucket: process.env.S3_USER_AVATARS_BUCKET || 'user-avatars-public',
+        Bucket: process.env.S3_USER_PUBLIC_BUCKET || 'user-public',
         Key: fileKey,
       }
       try {
-        const result = await s3.send(new GetObjectCommand(params))
+        const result = await s3ClientUserPublic.send(new GetObjectCommand(params))
 
         // Serve plain file
         // res.setHeader('Content-Type', result.ContentType || '')
