@@ -144,7 +144,7 @@ class ActionsController implements Controller {
       await this.wrapErrorHandler(async () => {
         const code = req.body.input.code
         if (!code) {
-          return res.status(400).send({ message: 'Code is required.' })
+          return res.status(400).send({ message: 'code is required.' })
         }
 
         const user = await prisma.users.findFirstOrThrow({
@@ -239,7 +239,7 @@ class ActionsController implements Controller {
         })
 
         // Clear cached auth tokens for this user
-        await cache.flushPrefix(user.id)
+        await cache.flushPrefix(user.id + ':')
         
         await sendPasswordChangedEmail.add('send password changed email for user id ' + user.id, new SendPasswordChangedEmailJobData(user.id), {
           attempts: 3,
@@ -283,7 +283,7 @@ class ActionsController implements Controller {
         })
 
         // Clear cached auth tokens for this user
-        await cache.flushPrefix(user.id)
+        await cache.flushPrefix(user.id + ':')
         
         await sendPasswordChangedEmail.add('send password changed email for user id ' + user.id, new SendPasswordChangedEmailJobData(user.id), {
           attempts: 3,
@@ -363,7 +363,7 @@ class ActionsController implements Controller {
         })
 
         // Clear cached auth tokens for this user
-        await cache.flushPrefix(user.id)
+        await cache.flushPrefix(user.id + ':')
 
         await sendUserDestroyedEmail.add('send destruction email for user id ' + user.id, new SendUserDestroyedEmailJobData(email), {
           attempts: 3,

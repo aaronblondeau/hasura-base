@@ -26,6 +26,7 @@ update_permissions:
   - role: user
     permission:
       columns:
+        - avatar_file_key
         - display_name
       filter:
         id:

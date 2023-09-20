@@ -25,8 +25,10 @@ class Cache {
   }
 
   async flushPrefix(prefix: string) {
-    const keys = await redis.keys(prefix + ':*')
-    await redis.del(keys)
+    const keys = await redis.keys(prefix + '*')
+    if (keys.length > 0) {
+      await redis.del(keys)
+    }
   }
 
   disconnect() {

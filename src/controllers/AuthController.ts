@@ -39,8 +39,19 @@ class AuthController implements Controller {
       }
 
       try {
+        // Decode and verify the token
+        const decoded = verifyToken(token)
+        const userId = decoded.user_id
+        const cacheKey = userId+':'+token
+
+        if (!userId) {
+          // No user id in the token => not authenticated
+          res.status(401).json({ error: 'unauthorized' })
+          return
+        }
+
         // Check for cached response for this token to save round trips to db
-        const cached = await cache.get(token)
+        const cached = await cache.get(cacheKey)
         if (cached) {
           if (cached === 'unauthorized') {
             return res.status(401).json({ error: 'unauthorized' })
@@ -48,19 +59,7 @@ class AuthController implements Controller {
           return res.json(JSON.parse(cached))
         }
 
-        // Decode and verify the token
-        const decoded = verifyToken(token)
-
-        const userId = decoded.user_id
-
-        if (!userId) {
-          // No user id in the token => not authenticated
-          await cache.set(userId+':'+token, 'unauthorized', cacheTTL)
-          res.status(401).json({ error: 'unauthorized' })
-          return
-        }
-
-        // Check if exists
+        // Check if user exists
         const user = await prisma.users.findUnique({
           where: {
             id: userId,
@@ -83,11 +82,10 @@ class AuthController implements Controller {
           'X-Hasura-Role': role,
           'X-Hasura-User-Id': userId
         }
-        await cache.set(userId+':'+token, JSON.stringify(responseData), cacheTTL)
+        await cache.set(cacheKey, JSON.stringify(responseData), cacheTTL)
         res.json(responseData)
 
       } catch (error) {
-        await cache.set(token, 'unauthorized', cacheTTL)
         console.error(error)
         res.status(401).json({ error: 'unauthorized' })
       }
