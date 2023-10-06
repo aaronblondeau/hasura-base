@@ -6,7 +6,6 @@ import prisma from '../database'
 import { randomInt } from 'crypto'
 import fs from 'fs-extra'
 import Handlebars from 'handlebars'
-import mjml2html from 'mjml'
 import { sendEmail } from '../email'
 
 const queueName = 'sendVerificationEmail'
@@ -49,17 +48,15 @@ export const worker = new Worker(queueName, async job => {
   const appName = process.env.APP_NAME || 'App Name'
   const verificationUrl = process.env.WEB_BASE_URL + '/verify-email/' + code
 
-  const mjml = await fs.readFile('./src/emails/verification.mjml', 'utf8')
-  const template = Handlebars.compile(mjml)
+  const emailHtml = await fs.readFile('./src/emails/build_production/email-verify.html', 'utf8')
+  const template = Handlebars.compile(emailHtml)
   const templateData = { appName, verificationUrl }
-  const mjmlFilled = template(templateData)
-  const mjmlOut = mjml2html(mjmlFilled)
-  const htmlMessage = mjmlOut.html
+  const templateFilled = template(templateData)
 
   const subject = appName + ' verify your email'
   const textMessage = `Please visit ${verificationUrl} to verify your new ${appName} account.`
   
-  await sendEmail(user.email, subject, textMessage, htmlMessage)
+  await sendEmail(user.email, subject, textMessage, templateFilled)
 }, { connection: queueRedisConnection })
 
 worker.on('completed', (job: Job, returnvalue: any) => {

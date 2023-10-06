@@ -4,7 +4,6 @@ import { Queue, Worker, Job } from 'bullmq'
 import queueRedisConnection from './queueRedisConnection'
 import fs from 'fs-extra'
 import Handlebars from 'handlebars'
-import mjml2html from 'mjml'
 import { sendEmail } from '../email'
 import prisma from '../database'
 
@@ -35,13 +34,12 @@ export const worker = new Worker(queueName, async job => {
   const name = submission.name
   const email = submission.email
   const message = submission.message
+  const appName = process.env.APP_NAME || 'App Name'
 
-  const mjml = await fs.readFile('./src/emails/contact_form_submission.mjml', 'utf8')
-  const template = Handlebars.compile(mjml)
-  const templateData = { name, email, message }
-  const mjmlFilled = template(templateData)
-  const mjmlOut = mjml2html(mjmlFilled)
-  const htmlMessage = mjmlOut.html
+  const emailHtml = await fs.readFile('./src/emails/build_production/contact-form-submission.html', 'utf8')
+  const template = Handlebars.compile(emailHtml)
+  const templateData = { name, email, message, appName }
+  const templateFilled = template(templateData)
 
   const subject = `AppName Contact Form Submission`
   const textMessage = `Name: ${name}\nEmail: ${email}\nMessage: ${message}`
@@ -56,7 +54,7 @@ export const worker = new Worker(queueName, async job => {
   }
 
   for (const recipeint of recipients) {
-    await sendEmail(recipeint, subject, textMessage, htmlMessage, email)
+    await sendEmail(recipeint, subject, textMessage, templateFilled, email)
   }
 
 }, { connection: queueRedisConnection })

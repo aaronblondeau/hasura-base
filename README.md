@@ -1,6 +1,6 @@
 # Hasura Base
 
-This is a starter project that uses Hasura, Prisma, Minio, BullMQ, and MJML.
+This is a starter project that uses Hasura, Prisma, Minio, BullMQ, and Maizzle.
 Authentication is handled by Hasura and JWTs.
 
 ## Getting Started
@@ -60,6 +60,27 @@ yarn prisma generate
 
 ```
 yarn dev:docker:stop
+```
+
+## Email Templates
+
+Emails templates are managed with [maizzle](https://maizzle.com/).
+
+To develop email templates:
+
+```
+cd src/emails
+yarn install
+yarn dev
+```
+
+Once the dev server has started, go to http://localhost:3050/.  Updates to templates will live reload!
+
+To build email templates
+
+```
+cd src/emails
+yarn build
 ```
 
 ## Troubleshooting

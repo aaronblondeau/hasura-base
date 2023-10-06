@@ -1,0 +1,47 @@
+---
+title: "Confirm your email address"
+preheader: "Please confirm your email address in order to activate your account."
+bodyClass: bg-slate-50
+appName: "@{{ appName }}"
+name: "@{{ name }}"
+email: "@{{ email }}"
+message: "@{{ message }}"
+---
+
+<x-main>
+  <div class="bg-slate-50 sm:px-4 font-sans">
+    <table align="center">
+      <tr>
+        <td class="w-[552px] max-w-full">
+          <div class="my-12 sm:my-8 text-center">
+            <a href="https://appname.com">
+              <img src="https://raw.githubusercontent.com/aaronblondeau/hasura-base-go/main/emails/build_production/images/maizzle.png" width="70" alt="Maizzle">
+            </a>
+          </div>
+
+          <table class="w-full">
+            <tr>
+              <td class="p-12 sm:px-6 text-base text-slate-700 bg-white rounded shadow-sm">
+                <h1 class="m-0 mb-6 text-2xl sm:leading-8 text-black font-semibold">
+                  New Contact Form Submission
+                </h1>
+
+                <p class="m-0 leading-6">
+                    Name : {{{ page.name }}}
+                </p>
+
+                <p class="m-0 leading-6">
+                    Email : {{{ page.email }}}
+                </p>
+
+                <p class="m-0 leading-6">
+                    Message : {{{ page.message }}}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</x-main>

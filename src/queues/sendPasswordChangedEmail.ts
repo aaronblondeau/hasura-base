@@ -6,7 +6,6 @@ import prisma from '../database'
 import { randomInt } from 'crypto'
 import fs from 'fs-extra'
 import Handlebars from 'handlebars'
-import mjml2html from 'mjml'
 import { sendEmail } from '../email'
 
 const queueName = 'sendPasswordChangedEmail'
@@ -35,17 +34,15 @@ export const worker = new Worker(queueName, async job => {
 
   const appName = process.env.APP_NAME || 'App Name'
 
-  const mjml = await fs.readFile('./src/emails/password_changed.mjml', 'utf8')
-  const template = Handlebars.compile(mjml)
+  const emailHtml = await fs.readFile('./src/emails/build_production/password-changed.html', 'utf8')
+  const template = Handlebars.compile(emailHtml)
   const templateData = { appName }
-  const mjmlFilled = template(templateData)
-  const mjmlOut = mjml2html(mjmlFilled)
-  const htmlMessage = mjmlOut.html
+  const templateFilled = template(templateData)
 
   const subject = appName + ' password changed'
   const textMessage = `Your ${appName} password has been changed. If this action was not taken by you then please contact us immediately.`
   
-  await sendEmail(user.email, subject, textMessage, htmlMessage)
+  await sendEmail(user.email, subject, textMessage, templateFilled)
 }, { connection: queueRedisConnection })
 
 worker.on('completed', (job: Job, returnvalue: any) => {
