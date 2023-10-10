@@ -2,8 +2,6 @@
 
 import { Queue, Worker, Job } from 'bullmq'
 import queueRedisConnection from './queueRedisConnection'
-import prisma from '../database'
-import { randomInt } from 'crypto'
 import fs from 'fs-extra'
 import Handlebars from 'handlebars'
 import { sendEmail } from '../email'
